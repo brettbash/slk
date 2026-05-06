@@ -108,16 +108,25 @@ type Workspace struct {
 }
 
 type Theme struct {
-	Primary     string `toml:"primary"`
-	Accent      string `toml:"accent"`
-	Warning     string `toml:"warning"`
-	Error       string `toml:"error"`
-	Background  string `toml:"background"`
-	Surface     string `toml:"surface"`
-	SurfaceDark string `toml:"surface_dark"`
-	Text        string `toml:"text"`
-	TextMuted   string `toml:"text_muted"`
-	Border      string `toml:"border"`
+	Primary              string `toml:"primary"`
+	Accent               string `toml:"accent"`
+	Warning              string `toml:"warning"`
+	Error                string `toml:"error"`
+	Background           string `toml:"background"`
+	Surface              string `toml:"surface"`
+	SurfaceDark          string `toml:"surface_dark"`
+	Text                 string `toml:"text"`
+	TextMuted            string `toml:"text_muted"`
+	Border               string `toml:"border"`
+	SidebarBackground    string `toml:"sidebar_background"`
+	SidebarText          string `toml:"sidebar_text"`
+	SidebarTextMuted     string `toml:"sidebar_text_muted"`
+	RailBackground       string `toml:"rail_background"`
+	SelectionBackground  string `toml:"selection_background"`
+	SelectionForeground  string `toml:"selection_foreground"`
+	ComposeInsertBG      string `toml:"compose_insert_bg"`
+	SelectionBgFocused   string `toml:"selection_bg_focused"`
+	SelectionBgUnfocused string `toml:"selection_bg_unfocused"`
 }
 
 func Default() Config {

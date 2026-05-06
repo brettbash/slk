@@ -290,6 +290,35 @@ func Apply(themeName string, overrides config.Theme) {
 		Border = lipgloss.Color(overrides.Border)
 	}
 
+	// Extended theme overrides
+	if overrides.SidebarBackground != "" {
+		colors.SidebarBackground = overrides.SidebarBackground
+	}
+	if overrides.SidebarText != "" {
+		colors.SidebarText = overrides.SidebarText
+	}
+	if overrides.SidebarTextMuted != "" {
+		colors.SidebarTextMuted = overrides.SidebarTextMuted
+	}
+	if overrides.RailBackground != "" {
+		colors.RailBackground = overrides.RailBackground
+	}
+	if overrides.SelectionBackground != "" {
+		colors.SelectionBackground = overrides.SelectionBackground
+	}
+	if overrides.SelectionForeground != "" {
+		colors.SelectionForeground = overrides.SelectionForeground
+	}
+	if overrides.ComposeInsertBG != "" {
+		colors.ComposeInsertBG = overrides.ComposeInsertBG
+	}
+	if overrides.SelectionBgFocused != "" {
+		colors.SelectionBgFocused = overrides.SelectionBgFocused
+	}
+	if overrides.SelectionBgUnfocused != "" {
+		colors.SelectionBgUnfocused = overrides.SelectionBgUnfocused
+	}
+
 	// Sidebar/rail colors fall back to their message-pane equivalents when
 	// unset on the theme, so existing themes render exactly as before. We
 	// compute these AFTER overrides so a user override of Background also
