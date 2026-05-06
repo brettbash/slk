@@ -55,6 +55,23 @@ func TestApplyOverrides(t *testing.T) {
 	Apply("dark", config.Theme{})
 }
 
+func TestParseColor_Transparent(t *testing.T) {
+	for _, input := range []string{"transparent", "none", "default", "TRANSPARENT", "None", "Default"} {
+		c := parseColor(input)
+		if _, ok := c.(lipgloss.NoColor); !ok {
+			t.Errorf("parseColor(%q) expected NoColor, got %T", input, c)
+		}
+	}
+}
+
+func TestApplyOverrides_Transparent(t *testing.T) {
+	Apply("dark", config.Theme{Background: "transparent"})
+	if _, ok := Background.(lipgloss.NoColor); !ok {
+		t.Errorf("expected transparent background (NoColor), got %T", Background)
+	}
+	Apply("dark", config.Theme{})
+}
+
 func TestApplyUnknownPresetFallsToDark(t *testing.T) {
 	Apply("nonexistent", config.Theme{})
 	if !colorEqual(Primary, lipgloss.Color("#4A9EFF")) {
