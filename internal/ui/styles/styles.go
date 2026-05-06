@@ -249,7 +249,7 @@ func Version() int64 { return version }
 func parseColor(s string) color.Color {
 	switch strings.ToLower(s) {
 	case "transparent", "none", "default":
-		return lipgloss.NoColor{}
+		return nil
 	}
 	return lipgloss.Color(s)
 }

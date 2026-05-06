@@ -49,14 +49,14 @@ func TestMixColors_AlphaOneIsForeground(t *testing.T) {
 }
 
 func TestMixColors_TransparentBackgroundReturnsTransparent(t *testing.T) {
-	out := mixColors(lipgloss.Color("#FF0000"), lipgloss.NoColor{}, 0.5)
-	if _, ok := out.(lipgloss.NoColor); !ok {
-		t.Fatalf("mixing with transparent bg must return NoColor, got %T", out)
+	out := mixColors(lipgloss.Color("#FF0000"), nil, 0.5)
+	if out != nil {
+		t.Fatalf("mixing with transparent bg must return nil, got %T", out)
 	}
 }
 
 func TestMixColors_TransparentForegroundReturnsBackground(t *testing.T) {
-	out := mixColors(lipgloss.NoColor{}, lipgloss.Color("#0000FF"), 0.5)
+	out := mixColors(nil, lipgloss.Color("#0000FF"), 0.5)
 	r, g, b := rgb(out)
 	if r != 0x00 || g != 0x00 || b != 0xFF {
 		t.Fatalf("mixing with transparent fg must return bg, got #%02X%02X%02X", r, g, b)

@@ -10,6 +10,12 @@ import (
 
 // colorEqual compares two color.Color values.
 func colorEqual(a, b color.Color) bool {
+	if a == nil && b == nil {
+		return true
+	}
+	if a == nil || b == nil {
+		return false
+	}
 	r1, g1, b1, a1 := a.RGBA()
 	r2, g2, b2, a2 := b.RGBA()
 	return r1 == r2 && g1 == g2 && b1 == b2 && a1 == a2
@@ -58,16 +64,16 @@ func TestApplyOverrides(t *testing.T) {
 func TestParseColor_Transparent(t *testing.T) {
 	for _, input := range []string{"transparent", "none", "default", "TRANSPARENT", "None", "Default"} {
 		c := parseColor(input)
-		if _, ok := c.(lipgloss.NoColor); !ok {
-			t.Errorf("parseColor(%q) expected NoColor, got %T", input, c)
+		if c != nil {
+			t.Errorf("parseColor(%q) expected nil, got %T", input, c)
 		}
 	}
 }
 
 func TestApplyOverrides_Transparent(t *testing.T) {
 	Apply("dark", config.Theme{Background: "transparent"})
-	if _, ok := Background.(lipgloss.NoColor); !ok {
-		t.Errorf("expected transparent background (NoColor), got %T", Background)
+	if Background != nil {
+		t.Errorf("expected transparent background (nil), got %T", Background)
 	}
 	Apply("dark", config.Theme{})
 }
