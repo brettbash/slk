@@ -18,9 +18,26 @@ something from the top of the list for the richest experience.
 
 ## Inside tmux
 
-slk forces half-block for inline images regardless of the
-outer terminal — pixel-protocol pass-through inside tmux is unreliable. OSC 52
-clipboard requires `set -g set-clipboard on` in your tmux config.
+By default slk forces half-block for inline images when it detects tmux.
+
+To get sharp kitty graphics inside tmux (tmux 3.4+ recommended):
+
+1. Set slk's image protocol to kitty explicitly in `~/.config/slk/config.toml`:
+   ```toml
+   [appearance]
+   image_protocol = "kitty"
+   ```
+2. slk will automatically run `tmux set -p allow-passthrough on` at startup
+   for the current pane. You can also add it globally in `~/.tmux.conf`:
+   ```bash
+   set -g allow-passthrough on
+   ```
+
+When running inside tmux with `image_protocol = "kitty"`, slk wraps kitty
+APC sequences in tmux DCS passthrough so they reach the outer terminal.
+
+OSC 52 clipboard (copy/paste) still requires `set -g set-clipboard on` in your
+tmux config — that setting is unrelated to image rendering.
 
 ## Overriding the image protocol
 

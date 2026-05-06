@@ -14,6 +14,8 @@ use_slack_sections = true       # use real Slack sidebar sections (default).
 theme = "dracula"
 timestamp_format = "3:04 PM"
 image_protocol = "auto"   # auto | kitty | sixel | halfblock | off
+                          # inside tmux, set "kitty" explicitly for
+                          # sharp images (slk auto-enables passthrough)
 max_image_rows = 20       # cap inline image height in terminal rows
 
 [animations]

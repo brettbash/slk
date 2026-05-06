@@ -33,7 +33,7 @@
 - `Enter` from the preview launches the OS image viewer
 - Lazy-loaded: images download only as they scroll into view
 - LRU cache at `~/.cache/slk/images/` (default 200 MB cap)
-- Inside tmux, slk falls back to half-block to avoid pixel-protocol pass-through pitfalls
+- Inside tmux, slk defaults to half-block, but sharp kitty graphics work when `image_protocol = "kitty"` is set explicitly (slk auto-enables tmux passthrough)
 - Configurable via `[appearance] image_protocol` (`auto` / `kitty` / `sixel` / `halfblock` / `off`) and `max_image_rows`
 
 See [[Terminal Compatibility|Terminal-Compatibility]] for which protocol your terminal supports.

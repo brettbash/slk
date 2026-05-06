@@ -51,6 +51,17 @@ var kittyDiacritics = []rune{
 
 const placeholderRune = '\U0010EEEE'
 
+// TmuxPassthrough, when true, wraps kitty APC sequences in tmux DCS
+// passthrough so they reach the outer terminal. Required for kitty
+// graphics to work inside tmux even with allow-passthrough enabled.
+var TmuxPassthrough bool
+
+func wrapTmuxPassthrough(seq string) string {
+	// tmux passthrough format: \ePtmux;\e{escaped_sequence}\e\\
+	// All \e (ESC) characters in the sequence must be doubled.
+	return "\x1bPtmux;\x1b" + strings.ReplaceAll(seq, "\x1b", "\x1b\x1b") + "\x1b\\"
+}
+
 // KittyRenderer encodes images via the kitty graphics protocol with
 // unicode-placeholder placement.
 type KittyRenderer struct {
@@ -162,7 +173,11 @@ func emitKittyUpload(w io.Writer, id uint32, payload string, cols, rows int) err
 		} else {
 			hdr = fmt.Sprintf("m=%d", more)
 		}
-		if _, err := fmt.Fprintf(w, "\x1b_G%s;%s\x1b\\", hdr, payload[i:end]); err != nil {
+		seq := fmt.Sprintf("\x1b_G%s;%s\x1b\\", hdr, payload[i:end])
+		if TmuxPassthrough {
+			seq = wrapTmuxPassthrough(seq)
+		}
+		if _, err := w.Write([]byte(seq)); err != nil {
 			return err
 		}
 	}

@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -403,22 +404,41 @@ func run() error {
 	// Detect image rendering protocol BEFORE constructing the avatar
 	// cache so the cache can pick the right rendering path (kitty
 	// graphics for sharp pixels, halfblock otherwise).
-	proto := imgpkg.Detect(imgpkg.CaptureEnv(), cfg.Appearance.ImageProtocol)
+	env := imgpkg.CaptureEnv()
+	proto := imgpkg.Detect(env, cfg.Appearance.ImageProtocol)
+	isExplicitKitty := strings.EqualFold(strings.TrimSpace(cfg.Appearance.ImageProtocol), "kitty")
 
 	// Optional: run kitty version probe if detected as kitty AND stdin is a TTY.
 	// Must happen BEFORE bubbletea takes over the terminal.
 	if proto == imgpkg.ProtoKitty && term.IsTerminal(int(os.Stdin.Fd())) {
-		state, err := term.MakeRaw(int(os.Stdin.Fd()))
-		if err != nil {
-			log.Printf("kitty probe skipped: cannot enter raw mode: %v", err)
-		} else {
-			ok := imgpkg.ProbeKittyGraphics(os.Stdout, os.Stdin, 200*time.Millisecond)
-			if rerr := term.Restore(int(os.Stdin.Fd()), state); rerr != nil {
-				log.Printf("term restore after kitty probe: %v", rerr)
+		if env.TMUX != "" && isExplicitKitty {
+			log.Println("kitty graphics in tmux: enabling passthrough")
+			imgpkg.TmuxPassthrough = true
+			cmd := exec.Command("tmux", "set", "-p", "allow-passthrough", "on")
+			cmd.Stdin = nil
+			cmd.Stdout = nil
+			cmd.Stderr = nil
+			if err := cmd.Run(); err != nil {
+				log.Printf("kitty graphics in tmux: failed to enable allow-passthrough: %v", err)
 			}
-			if !ok {
-				log.Println("kitty probe failed, downgrading to halfblock")
-				proto = imgpkg.ProtoHalfBlock
+			log.Println("kitty probe skipped: running inside tmux")
+		} else {
+			state, err := term.MakeRaw(int(os.Stdin.Fd()))
+			if err != nil {
+				log.Printf("kitty probe skipped: cannot enter raw mode: %v", err)
+			} else {
+				ok := imgpkg.ProbeKittyGraphics(os.Stdout, os.Stdin, 200*time.Millisecond)
+				if rerr := term.Restore(int(os.Stdin.Fd()), state); rerr != nil {
+					log.Printf("term restore after kitty probe: %v", rerr)
+				}
+				if !ok {
+					if isExplicitKitty {
+						log.Println("kitty probe failed, but image_protocol is explicitly set to kitty; honoring user config")
+					} else {
+						log.Println("kitty probe failed, downgrading to halfblock")
+						proto = imgpkg.ProtoHalfBlock
+					}
+				}
 			}
 		}
 	}
