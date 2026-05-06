@@ -339,13 +339,22 @@ func bgSGRParams(ansi string) string {
 }
 
 // bgANSIFor returns the ANSI 24-bit background-color escape for c.
+// When c is nil (transparent theme), returns the ANSI default-background
+// reset so the terminal's native background (e.g. Ghostty wallpaper) shows.
 func bgANSIFor(c color.Color) string {
+	if c == nil {
+		return "\x1b[49m"
+	}
 	r, g, b, _ := c.RGBA()
 	return fmt.Sprintf("\x1b[48;2;%d;%d;%dm", r>>8, g>>8, b>>8)
 }
 
 // fgANSIFor returns the ANSI 24-bit foreground-color escape for c.
+// When c is nil, returns the ANSI default-foreground reset.
 func fgANSIFor(c color.Color) string {
+	if c == nil {
+		return "\x1b[39m"
+	}
 	r, g, b, _ := c.RGBA()
 	return fmt.Sprintf("\x1b[38;2;%d;%d;%dm", r>>8, g>>8, b>>8)
 }

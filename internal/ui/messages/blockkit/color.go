@@ -44,6 +44,9 @@ func ResolveAttachmentColor(c string) string {
 // has no String method and whose %v formatting ("{r g b a}") is not
 // re-parseable by lipgloss.
 func colorString(c color.Color) string {
+	if c == nil {
+		return "#000000"
+	}
 	r, g, b, _ := c.RGBA()
 	// RGBA returns 16-bit per channel; shift down to 8-bit.
 	return fmt.Sprintf("#%02x%02x%02x", r>>8, g>>8, b>>8)
