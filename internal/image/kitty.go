@@ -69,6 +69,12 @@ type KittyRenderer struct {
 
 	mu      sync.Mutex
 	sources map[string]image.Image
+
+	// cellPxW and cellPxH are the terminal cell dimensions in pixels.
+	// Defaults are 8×16; callers should override with measured values
+	// from CellPixels() for accurate aspect ratio.
+	cellPxW int
+	cellPxH int
 }
 
 // NewKittyRenderer constructs a kitty renderer backed by the given registry.
@@ -76,6 +82,23 @@ func NewKittyRenderer(reg *Registry) *KittyRenderer {
 	return &KittyRenderer{
 		registry: reg,
 		sources:  map[string]image.Image{},
+		cellPxW:  8,
+		cellPxH:  16,
+	}
+}
+
+// SetCellPixels configures the terminal cell size used when scaling images.
+// Must match the values passed to imgrender.ImageContext so that the PNG
+// aspect ratio agrees with the cell-grid aspect ratio computed by
+// computeImageTarget.
+func (k *KittyRenderer) SetCellPixels(w, h int) {
+	k.mu.Lock()
+	defer k.mu.Unlock()
+	if w > 0 {
+		k.cellPxW = w
+	}
+	if h > 0 {
+		k.cellPxH = h
 	}
 }
 
@@ -101,6 +124,8 @@ func (k *KittyRenderer) SetSource(key string, img image.Image) {
 func (k *KittyRenderer) RenderKey(key string, target image.Point) Render {
 	k.mu.Lock()
 	src, ok := k.sources[key]
+	cellW := k.cellPxW
+	cellH := k.cellPxH
 	k.mu.Unlock()
 	if !ok || target.X <= 0 || target.Y <= 0 {
 		return Render{Cells: target}
@@ -120,8 +145,8 @@ func (k *KittyRenderer) RenderKey(key string, target image.Point) Render {
 		// Only resize+encode when the image is actually being uploaded.
 		// On repeat calls (fresh=false) the registered ID is reused;
 		// no need to re-do the bilinear downscale or PNG encode.
-		pxW := target.X * 8
-		pxH := target.Y * 16
+		pxW := target.X * cellW
+		pxH := target.Y * cellH
 		resized := image.NewRGBA(image.Rect(0, 0, pxW, pxH))
 		draw.BiLinear.Scale(resized, resized.Bounds(), src, src.Bounds(), draw.Over, nil)
 		var pngBuf bytes.Buffer

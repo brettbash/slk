@@ -452,6 +452,7 @@ func run() error {
 	// Cell pixel metrics for sizing decisions.
 	pxW, pxH := imgpkg.CellPixels(int(os.Stdout.Fd()))
 	log.Printf("cell pixels: %dx%d", pxW, pxH)
+	imgpkg.KittyRendererInstance().SetCellPixels(pxW, pxH)
 
 	// Wire the inline-image pipeline into the messages pane. SendMsg
 	// stays nil here because tea.NewProgram has not run yet; we re-call
