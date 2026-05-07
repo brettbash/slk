@@ -1076,6 +1076,23 @@ func (m *Model) buildCacheStyles(width int) cacheStyles {
 	}
 }
 
+// fillToWidth pads each line of s to exactly w cells using
+// emojiutil.Width for measurement. Padding spaces are rendered with
+// style so the background color matches. This avoids the off-by-one
+// drift that lipgloss's built-in Width() produces for emoji whose
+// terminal width disagrees with its internal width model.
+func fillToWidth(s string, w int, style lipgloss.Style) string {
+	lines := strings.Split(s, "\n")
+	for i, line := range lines {
+		measured := emojiutil.Width(line)
+		if measured < w {
+			pad := w - measured
+			lines[i] = line + style.Render(strings.Repeat(" ", pad))
+		}
+	}
+	return strings.Join(lines, "\n")
+}
+
 // renderLoadingOlderHint composes the "Loading older messages..." line
 // fresh on every call, using the CURRENT m.spinnerFrame for the
 // braille-spinner glyph. Called from View() each frame so the glyph
@@ -1121,9 +1138,9 @@ func (m *Model) renderMessageEntry(i int, width int, cs cacheStyles) viewEntry {
 	// emitted by RenderSlackMarkdown) explicitly paint Background, and
 	// without this substitution they show through as dark patches on
 	// the tinted row.
-	filledNormal := cs.borderFill.Width(width - 1).Render(rendered)
+	filledNormal := fillToWidth(rendered, width-1, cs.borderFill)
 	renderedTinted := RepaintBgToSelectionTint(rendered, m.focused)
-	selectedFill := lipgloss.NewStyle().Background(styles.SelectionTintColor(m.focused)).Width(width - 1).Render(renderedTinted)
+	selectedFill := fillToWidth(renderedTinted, width-1, lipgloss.NewStyle().Background(styles.SelectionTintColor(m.focused)))
 	normal := cs.borderInvis.Render(filledNormal)
 	selected := cs.borderSelect.Render(selectedFill)
 
