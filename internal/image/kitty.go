@@ -148,7 +148,31 @@ func (k *KittyRenderer) RenderKey(key string, target image.Point) Render {
 		pxW := target.X * cellW
 		pxH := target.Y * cellH
 		resized := image.NewRGBA(image.Rect(0, 0, pxW, pxH))
-		draw.BiLinear.Scale(resized, resized.Bounds(), src, src.Bounds(), draw.Over, nil)
+		// Preserve source aspect ratio and center in the canvas so the
+		// PNG dimensions exactly match the cell footprint. Kitty displays
+		// the image at the cell size defined by c/r; if we stretched the
+		// image to fill, avatars (square source in a 4×2 cell footprint
+		// with non-square cells) would look vertically squashed.
+		srcBounds := src.Bounds()
+		srcW, srcH := srcBounds.Dx(), srcBounds.Dy()
+		scaleX := float64(pxW) / float64(srcW)
+		scaleY := float64(pxH) / float64(srcH)
+		scale := scaleX
+		if scaleY < scaleX {
+			scale = scaleY
+		}
+		newW := int(float64(srcW) * scale)
+		newH := int(float64(srcH) * scale)
+		if newW < 1 {
+			newW = 1
+		}
+		if newH < 1 {
+			newH = 1
+		}
+		offX := (pxW - newW) / 2
+		offY := (pxH - newH) / 2
+		dstRect := image.Rect(offX, offY, offX+newW, offY+newH)
+		draw.BiLinear.Scale(resized, dstRect, src, srcBounds, draw.Over, nil)
 		var pngBuf bytes.Buffer
 		if err := imgpng.Encode(&pngBuf, resized); err == nil {
 			payload := base64.StdEncoding.EncodeToString(pngBuf.Bytes())
