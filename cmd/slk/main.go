@@ -234,6 +234,15 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Done in %dms. Cached to %s\n", time.Since(probeStart).Milliseconds(), cachePath)
 	}
 
+	// Emoji width probes are unreliable inside tmux because tmux
+	// intercepts DSR responses, producing wrong cached widths. Clear
+	// the probed cache so both emojiutil.Width() and lipgloss fall
+	// back to go-runewidth defaults — consistent, if not perfect.
+	if os.Getenv("TMUX") != "" && emojiwidth.IsCalibrated() {
+		log.Println("tmux detected: clearing emoji width cache for consistent fallback")
+		emojiwidth.Reset()
+	}
+
 	if forceProbe {
 		// --probe-emoji is a diagnostic flag: probe and exit.
 		fmt.Fprintln(os.Stderr, "Probe complete. Exiting.")

@@ -7,6 +7,7 @@ import (
 
 	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/ansi"
+	"github.com/clipperhouse/displaywidth"
 	"github.com/rivo/uniseg"
 )
 
@@ -82,6 +83,15 @@ func resetWidthMap() {
 	widthMu.Lock()
 	defer widthMu.Unlock()
 	widthMap = nil
+}
+
+// Reset clears the probed width map and removes the displaywidth
+// overrides, forcing Width() and lipgloss to fall back to go-runewidth
+// defaults. Call this when the probed cache is known to be unreliable
+// (e.g., when running inside tmux where DSR responses are intercepted).
+func Reset() {
+	resetWidthMap()
+	displaywidth.SetExternalWidths(nil)
 }
 
 // containsNonASCII returns true if s has any byte ≥ 0x80.
